@@ -43,7 +43,15 @@ builder.Services.AddDbContext<AppDbContext>(options => options.UseNpgsql(connect
 builder.Services.AddHostedService<OutboxPublisherBackgroundService>();
 
 builder.Services.AddCors();
-builder.Services.AddHttpClient<Orders.Core.Interfaces.IAiAnalyticsService, Orders.Infrastructure.Services.GeminiAiService>();
+var aiProvider = builder.Configuration["AiProvider"] ?? "Gemini";
+if (aiProvider.Equals("ChatGPT", StringComparison.OrdinalIgnoreCase))
+{
+    builder.Services.AddHttpClient<Orders.Core.Interfaces.IAiAnalyticsService, Orders.Infrastructure.Services.ChatGptAiService>();
+}
+else
+{
+    builder.Services.AddHttpClient<Orders.Core.Interfaces.IAiAnalyticsService, Orders.Infrastructure.Services.GeminiAiService>();
+}
 
 // Tratamento padronizado de exceções (RFC 7807)
 builder.Services.AddProblemDetails();
@@ -120,6 +128,7 @@ public record CreateOrderRequest(string Cliente, string Produto, decimal Valor);
 public record AskRequest(string Question);
 
 public partial class Program { }
+
 
 
 

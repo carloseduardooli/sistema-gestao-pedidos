@@ -61,6 +61,8 @@ services:
       - OTEL_SERVICE_NAME=Orders.Api
       - Gemini__ApiKey=${GEMINI_API_KEY}
       - Gemini__Model=gemini-3.8-flash
+      - AiProvider=${AI_PROVIDER:-Gemini}
+      - OpenAi__ApiKey=${OPENAI_API_KEY}
     healthcheck:
       test: ["CMD", "curl", "-f", "http://localhost:5000/health"]
       interval: 10s
@@ -102,6 +104,7 @@ services:
       - "3000:3000"
     depends_on:
       - api
+
 
 
 
