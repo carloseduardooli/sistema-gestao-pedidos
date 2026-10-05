@@ -7,8 +7,11 @@ using RabbitMQ.Client.Events;
 
 namespace Orders.Worker;
 
+using System.Diagnostics;
+
 public class Worker : BackgroundService
 {
+    public static readonly ActivitySource ActivitySource = new("Orders.Worker");
     private readonly IServiceProvider _serviceProvider;
     private readonly ILogger<Worker> _logger;
     private IConnection? _connection;
@@ -23,15 +26,32 @@ public class Worker : BackgroundService
 
     private void InitRabbitMQ()
     {
+        var host = _serviceProvider.GetRequiredService<IConfiguration>()["RabbitMq:Host"] ?? "localhost";
+        _logger.LogInformation("Tentando conectar ao RabbitMQ no host: {Host}", host);
         var factory = new ConnectionFactory 
         { 
-            HostName = _serviceProvider.GetRequiredService<IConfiguration>()["RabbitMq:Host"] ?? "localhost",
+            HostName = host,
             UserName = _serviceProvider.GetRequiredService<IConfiguration>()["RabbitMq:UserName"] ?? "guest",
             Password = _serviceProvider.GetRequiredService<IConfiguration>()["RabbitMq:Password"] ?? "guest",
             DispatchConsumersAsync = true
         };
 
-        _connection = factory.CreateConnection();
+        int retries = 5;
+        while (retries > 0)
+        {
+            try
+            {
+                _connection = factory.CreateConnection();
+                break;
+            }
+            catch (Exception ex)
+            {
+                _logger.LogWarning(ex, "RabbitMQ indisponível, tentando novamente em 3s... Tentativas restantes: {Retries}", retries);
+                Thread.Sleep(3000);
+                retries--;
+            }
+        }
+        if (_connection == null) throw new Exception("Falha fatal: Não foi possível conectar ao RabbitMQ após várias tentativas.");
         _channel = _connection.CreateModel();
         _channel.QueueDeclare(queue: "orders_queue", durable: true, exclusive: false, autoDelete: false, arguments: null);
         _channel.BasicQos(prefetchSize: 0, prefetchCount: 1, global: false);
@@ -71,6 +91,8 @@ public class Worker : BackgroundService
 
     private async Task ProcessMessageAsync(Guid orderId, CancellationToken stoppingToken)
     {
+        using var activity = ActivitySource.StartActivity("ProcessWorkerMessage");
+        activity?.SetTag("order.id", orderId.ToString());
         using var scope = _serviceProvider.CreateScope();
         var processor = scope.ServiceProvider.GetRequiredService<OrderProcessor>();
 
@@ -91,5 +113,7 @@ public class Worker : BackgroundService
         base.Dispose();
     }
 }
+
+
 
 
