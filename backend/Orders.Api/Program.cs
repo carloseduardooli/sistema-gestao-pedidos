@@ -48,6 +48,10 @@ if (aiProvider.Equals("ChatGPT", StringComparison.OrdinalIgnoreCase))
 {
     builder.Services.AddHttpClient<Orders.Core.Interfaces.IAiAnalyticsService, Orders.Infrastructure.Services.ChatGptAiService>();
 }
+else if (aiProvider.Equals("Groq", StringComparison.OrdinalIgnoreCase))
+{
+    builder.Services.AddHttpClient<Orders.Core.Interfaces.IAiAnalyticsService, Orders.Infrastructure.Services.GroqAiService>();
+}
 else
 {
     builder.Services.AddHttpClient<Orders.Core.Interfaces.IAiAnalyticsService, Orders.Infrastructure.Services.GeminiAiService>();
@@ -128,6 +132,7 @@ public record CreateOrderRequest(string Cliente, string Produto, decimal Valor);
 public record AskRequest(string Question);
 
 public partial class Program { }
+
 
 
 
