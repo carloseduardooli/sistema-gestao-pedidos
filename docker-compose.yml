@@ -60,7 +60,7 @@ services:
       - OTEL_EXPORTER_OTLP_ENDPOINT=http://aspire-dashboard:18889
       - OTEL_SERVICE_NAME=Orders.Api
       - Gemini__ApiKey=${GEMINI_API_KEY}
-      - Gemini__Model=gemini-3.1-pro-preview
+      - Gemini__Model=gemini-2.5-flash
     healthcheck:
       test: ["CMD", "curl", "-f", "http://localhost:5000/health"]
       interval: 10s
@@ -102,6 +102,7 @@ services:
       - "3000:3000"
     depends_on:
       - api
+
 
 
 
