@@ -98,3 +98,4 @@ O Módulo de IA tem foco na arquitetura corporativa: apliquei o *Dependency Inve
 ### 5. Testes de Integração reais
 Testar consultas de banco e filas simulando eles na memória causa falsos positivos. Para testar a infraestrutura de fato, utilizei o **Testcontainers**. A cada execução dos meus testes, ele sobe um container efêmero no Docker, testa a API salvando no PostgreSQL real com RabbitMQ real, e destrói o ambiente depois. Também apliquei o padrão de **Golden Tests** (Snapshot usando `Verify.Xunit`) travando os contratos da API.
 
+
