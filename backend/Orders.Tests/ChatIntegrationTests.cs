@@ -42,7 +42,7 @@ public class ChatIntegrationTests : IClassFixture<CustomWebApplicationFactory>
         var jsonResponse = await response.Content.ReadAsStringAsync();
 
         // GOLDEN TEST (Garante que a estrutura JSON { "resposta": "..." } não mudará sem querer)
-        await Verify(jsonResponse);
+        await VerifyJson(jsonResponse);
     }
 }
 
@@ -54,3 +54,4 @@ public class FakeAiService : IAiAnalyticsService
         return Task.FromResult("Mock da IA: Temos 1 pedido no valor de R$ 3500,00 registrado no banco.");
     }
 }
+
