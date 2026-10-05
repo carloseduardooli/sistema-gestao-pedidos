@@ -4,13 +4,13 @@ services:
   postgres:
     image: postgres:15
     environment:
-      POSTGRES_USER: postgres
-      POSTGRES_PASSWORD: postgres
+      POSTGRES_USER: ${DB_USER}
+      POSTGRES_PASSWORD: ${DB_PASS}
       POSTGRES_DB: OrdersDb
     ports:
       - "5433:5432" # Mapeado para 5433 no host para evitar conflito com instâncias locais
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U postgres -d OrdersDb"]
+      test: ["CMD-SHELL", "pg_isready -U ${DB_USER} -d OrdersDb"]
       interval: 10s
       timeout: 5s
       retries: 5
@@ -18,8 +18,8 @@ services:
   pgadmin:
     image: dpage/pgadmin4
     environment:
-      PGADMIN_DEFAULT_EMAIL: admin@admin.com
-      PGADMIN_DEFAULT_PASSWORD: admin
+      PGADMIN_DEFAULT_EMAIL: ${PGADMIN_EMAIL}
+      PGADMIN_DEFAULT_PASSWORD: ${PGADMIN_PASS}
     ports:
       - "5050:80"
     depends_on:
@@ -55,9 +55,9 @@ services:
     ports:
       - "5000:5000"
     environment:
-      # O override das variáveis aponta para os nomes internos dos containers no Docker Network
-      - ConnectionStrings__DefaultConnection=Host=postgres;Port=5432;Database=OrdersDb;Username=postgres;Password=postgres
+      - ConnectionStrings__DefaultConnection=Host=postgres;Port=5432;Database=OrdersDb;Username=${DB_USER};Password=${DB_PASS}
       - RabbitMq__Host=rabbitmq
+      - Gemini__ApiKey=${GEMINI_API_KEY}
     depends_on:
       postgres:
         condition: service_healthy
@@ -69,7 +69,7 @@ services:
       context: ./backend
       dockerfile: Orders.Worker/Dockerfile
     environment:
-      - ConnectionStrings__DefaultConnection=Host=postgres;Port=5432;Database=OrdersDb;Username=postgres;Password=postgres
+      - ConnectionStrings__DefaultConnection=Host=postgres;Port=5432;Database=OrdersDb;Username=${DB_USER};Password=${DB_PASS}
       - RabbitMq__Host=rabbitmq
     depends_on:
       postgres:

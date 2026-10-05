@@ -6,9 +6,17 @@ Desenvolvi este projeto focando em entregar um código resiliente, com arquitetu
 
 ## 🚀 Como Executar o Projeto (Focando na DX)
 
-Como premissa de excelente Experiência de Desenvolvimento (DX), o projeto foi 100% "dockerizado". Você não precisa instalar bancos ou o SDK do Node na máquina.
+Como premissa de excelente Experiência de Desenvolvimento (DX) aliada à Segurança, o projeto foi 100% "dockerizado" e utiliza arquivos `.env` para proteger segredos.
 
-Na raiz do projeto, rode:
+Na raiz do projeto, siga estes passos:
+
+1. Faça uma cópia do arquivo de configuração:
+```bash
+cp .env.example .env
+```
+*(Abra o arquivo `.env` recém-criado e cole a sua chave do Google Gemini na variável `GEMINI_API_KEY`, se quiser testar o chat. As senhas de banco e pgAdmin já vêm preenchidas por padrão para uso local).*
+
+2. Suba o ambiente:
 ```bash
 docker-compose up -d --build
 ```
@@ -24,10 +32,8 @@ docker-compose up -d --build
 - **Painel de Mensageria (RabbitMQ):** [http://localhost:15672](http://localhost:15672) *(User: `guest` | Pass: `guest`)*
 - **Painel de Telemetria (Aspire Dashboard):** [http://localhost:18888](http://localhost:18888) *(Tracing e logs dos containers)*
 - **Painel do Banco de Dados (pgAdmin):** [http://localhost:5050](http://localhost:5050)
-  - **Login:** `admin@admin.com` | **Senha:** `admin`
-  - *Dica para conectar o banco:* Dentro do painel, clique em *Add New Server*. Na aba 'Connection', preencha Hostname: `postgres`, Port: `5432`, Username: `postgres`, Password: `postgres`.
-
-*(Opcional - Módulo IA)*: Se quiser testar o chat inteligente no frontend, cole sua chave do Google Gemini no arquivo `backend/Orders.Api/appsettings.json` na variável `Gemini:ApiKey` antes de rodar o compose.
+  - **Login:** *(Veja as variáveis `PGADMIN_EMAIL` e `PGADMIN_PASS` no seu arquivo `.env`)*
+  - *Dica para conectar o banco:* Dentro do painel, clique em *Add New Server*. Na aba 'Connection', preencha Hostname: `postgres`, Port: `5432`, e as credenciais definidas em `DB_USER` e `DB_PASS` no seu arquivo `.env`.
 
 ### 🧪 Como rodar a Suíte de Testes
 Este projeto possui Testes de Integração avançados usando **Testcontainers** (bancos reais efêmeros no Docker). Em um terminal na raiz, rode:
