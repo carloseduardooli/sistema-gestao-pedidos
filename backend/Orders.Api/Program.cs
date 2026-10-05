@@ -27,7 +27,7 @@ builder.Services.AddOpenTelemetry()
         tracing.AddAspNetCoreInstrumentation()
                .AddHttpClientInstrumentation();
     })
-    .UseOtlpExporter();
+    
 
 // 1. Configuração do Banco
 var connectionString = builder.Configuration.GetConnectionString("DefaultConnection") 
@@ -114,3 +114,4 @@ public record CreateOrderRequest(string Cliente, string Produto, decimal Valor);
 public record AskRequest(string Question);
 
 public partial class Program { }
+

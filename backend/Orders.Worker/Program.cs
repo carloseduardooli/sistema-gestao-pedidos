@@ -20,7 +20,7 @@ builder.Services.AddOpenTelemetry()
     })
     .WithTracing(tracing => {
     })
-    .UseOtlpExporter();
+    
 
 var connectionString = builder.Configuration.GetConnectionString("DefaultConnection") 
                        ?? "Host=localhost;Database=ordersdb;Username=user;Password=password";
@@ -35,4 +35,5 @@ builder.Services.AddHostedService<Worker>();
 
 var host = builder.Build();
 host.Run();
+
 
