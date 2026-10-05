@@ -24,10 +24,10 @@ public class OutboxPublisherBackgroundService : BackgroundService
         
         var factory = new ConnectionFactory 
         { 
-            HostName = _configuration["RabbitMQ:HostName"] ?? "localhost",
-            Port = _configuration.GetValue<int?>("RabbitMQ:Port") ?? 5672,
-            UserName = _configuration["RabbitMQ:UserName"] ?? "user", 
-            Password = _configuration["RabbitMQ:Password"] ?? "password" 
+            HostName = _configuration["RabbitMq:Host"] ?? "localhost",
+            Port = 5672,
+            UserName = _configuration["RabbitMq:UserName"] ?? "guest", 
+            Password = _configuration["RabbitMq:Password"] ?? "guest" 
         };
 
         while (!stoppingToken.IsCancellationRequested)
@@ -80,4 +80,5 @@ public class OutboxPublisherBackgroundService : BackgroundService
         await db.SaveChangesAsync(stoppingToken);
     }
 }
+
 

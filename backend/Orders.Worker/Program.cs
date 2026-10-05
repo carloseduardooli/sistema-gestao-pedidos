@@ -2,7 +2,25 @@ using Microsoft.EntityFrameworkCore;
 using Orders.Infrastructure.Data;
 using Orders.Worker;
 
+using OpenTelemetry.Logs;
+using OpenTelemetry.Metrics;
+using OpenTelemetry.Trace;
+
 var builder = Host.CreateApplicationBuilder(args);
+
+// Configuração do OpenTelemetry para o Aspire Dashboard
+builder.Logging.AddOpenTelemetry(logging => {
+    logging.IncludeFormattedMessage = true;
+    logging.IncludeScopes = true;
+});
+
+builder.Services.AddOpenTelemetry()
+    .WithMetrics(metrics => {
+        metrics.AddRuntimeInstrumentation();
+    })
+    .WithTracing(tracing => {
+    })
+    .UseOtlpExporter();
 
 var connectionString = builder.Configuration.GetConnectionString("DefaultConnection") 
                        ?? "Host=localhost;Database=ordersdb;Username=user;Password=password";
@@ -17,3 +35,4 @@ builder.Services.AddHostedService<Worker>();
 
 var host = builder.Build();
 host.Run();
+
