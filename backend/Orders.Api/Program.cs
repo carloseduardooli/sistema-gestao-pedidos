@@ -28,7 +28,7 @@ builder.Services.AddOpenTelemetry()
     .WithTracing(tracing => {
         tracing.AddAspNetCoreInstrumentation(opts => { opts.Filter = ctx => !(ctx.Request.Method == "GET" && ctx.Request.Path == "/orders"); })
                .AddHttpClientInstrumentation()
-               .AddNpgsql()
+               .AddEntityFrameworkCoreInstrumentation()
                .AddSource("Orders.OutboxPublisher")
                .AddOtlpExporter();
     });
@@ -47,11 +47,13 @@ builder.Services.AddHttpClient<Orders.Core.Interfaces.IAiAnalyticsService, Order
 
 // Tratamento padronizado de exceções (RFC 7807)
 builder.Services.AddProblemDetails();
+builder.Services.AddHealthChecks();
 
 var app = builder.Build();
 
 app.UseExceptionHandler(); // Captura exceptions globais e retorna JSON seguro
 app.UseStatusCodePages();
+app.MapHealthChecks("/health");
 
 // Migrations automáticas do banco de dados (Requisito)
 using (var scope = app.Services.CreateScope())
@@ -118,6 +120,9 @@ public record CreateOrderRequest(string Cliente, string Produto, decimal Valor);
 public record AskRequest(string Question);
 
 public partial class Program { }
+
+
+
 
 
 

@@ -37,7 +37,7 @@ services:
       retries: 5
 
   aspire-dashboard:
-    image: mcr.microsoft.com/dotnet/nightly/aspire-dashboard:8.0.0-preview.6
+    image: mcr.microsoft.com/dotnet/aspire-dashboard:8.1
     environment:
       - DOTNET_DASHBOARD_UNSECURED_ALLOW_ANONYMOUS=true
     ports:
@@ -60,6 +60,11 @@ services:
       - OTEL_EXPORTER_OTLP_ENDPOINT=http://aspire-dashboard:18889
       - OTEL_SERVICE_NAME=Orders.Api
       - Gemini__ApiKey=${GEMINI_API_KEY}
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:5000/health"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
     depends_on:
       postgres:
         condition: service_healthy
@@ -75,13 +80,18 @@ services:
       - RabbitMq__Host=rabbitmq
       - OTEL_EXPORTER_OTLP_ENDPOINT=http://aspire-dashboard:18889
       - OTEL_SERVICE_NAME=Orders.Worker
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:5000/health"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
     depends_on:
       postgres:
         condition: service_healthy
       rabbitmq:
         condition: service_healthy
       api:
-        condition: service_started
+        condition: service_healthy
 
   frontend:
     build:
@@ -91,6 +101,8 @@ services:
       - "3000:3000"
     depends_on:
       - api
+
+
 
 
 

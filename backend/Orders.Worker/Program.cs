@@ -20,7 +20,7 @@ builder.Services.AddOpenTelemetry()
                .AddOtlpExporter();
     })
     .WithTracing(tracing => {
-        tracing.AddNpgsql().AddSource("Orders.Worker").AddOtlpExporter();
+        tracing.AddEntityFrameworkCoreInstrumentation().AddSource("Orders.Worker").AddOtlpExporter();
     });
 
 var connectionString = builder.Configuration.GetConnectionString("DefaultConnection") 
@@ -32,6 +32,8 @@ builder.Services.AddScoped<OrderProcessor>();
 
 var host = builder.Build();
 host.Run();
+
+
 
 
 
