@@ -42,7 +42,7 @@ services:
       - DOTNET_DASHBOARD_UNSECURED_ALLOW_ANONYMOUS=true
     ports:
       - "18888:18888" # UI
-      - "4317:4317" # OTLP gRPC
+      - "18889:18889" # OTLP gRPC
 
   # ==========================================
   # SERVIÇOS DA APLICAÇÃO (Orquestração Total)
@@ -57,7 +57,7 @@ services:
     environment:
       - ConnectionStrings__DefaultConnection=Host=postgres;Port=5432;Database=OrdersDb;Username=${DB_USER};Password=${DB_PASS}
       - RabbitMq__Host=rabbitmq
-      - OTEL_EXPORTER_OTLP_ENDPOINT=http://aspire-dashboard:4317
+      - OTEL_EXPORTER_OTLP_ENDPOINT=http://aspire-dashboard:18889
       - Gemini__ApiKey=${GEMINI_API_KEY}
     depends_on:
       postgres:
@@ -72,7 +72,7 @@ services:
     environment:
       - ConnectionStrings__DefaultConnection=Host=postgres;Port=5432;Database=OrdersDb;Username=${DB_USER};Password=${DB_PASS}
       - RabbitMq__Host=rabbitmq
-      - OTEL_EXPORTER_OTLP_ENDPOINT=http://aspire-dashboard:4317
+      - OTEL_EXPORTER_OTLP_ENDPOINT=http://aspire-dashboard:18889
     depends_on:
       postgres:
         condition: service_healthy
@@ -89,4 +89,5 @@ services:
       - "3000:3000"
     depends_on:
       - api
+
 

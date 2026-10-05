@@ -1,4 +1,5 @@
-using Orders.Worker;
+using Microsoft.EntityFrameworkCore;
+using Orders.Infrastructure.Data;using Orders.Worker;
 using OpenTelemetry.Logs;
 using OpenTelemetry.Metrics;
 using OpenTelemetry.Trace;
@@ -21,8 +22,13 @@ builder.Services.AddOpenTelemetry()
         tracing.AddOtlpExporter();
     });
 
+var connectionString = builder.Configuration.GetConnectionString("DefaultConnection") 
+                       ?? "Host=localhost;Port=5433;Database=OrdersDb;Username=postgres;Password=postgres";
+builder.Services.AddDbContext<AppDbContext>(options => options.UseNpgsql(connectionString));
+
 builder.Services.AddHostedService<Worker>();
 builder.Services.AddScoped<OrderProcessor>();
 
 var host = builder.Build();
 host.Run();
+
