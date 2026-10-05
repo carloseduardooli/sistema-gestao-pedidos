@@ -20,7 +20,7 @@ public class GeminiAiService : IAiAnalyticsService
         _httpClient = httpClient;
         _db = db;
         _apiKey = configuration["Gemini:ApiKey"] ?? throw new ArgumentNullException("Gemini API Key não configurada!");
-        _model = configuration["Gemini:Model"] ?? "gemini-2.5-pro"; // Fallback de segurança
+        _model = configuration["Gemini:Model"] ?? "gemini-3.1-pro-preview"; // Fallback de segurança
     }
 
     public async Task<string> AskAboutOrdersAsync(string userQuestion)
@@ -110,6 +110,7 @@ Regras IMPORTANTES:
         return text ?? string.Empty;
     }
 }
+
 
 
 
