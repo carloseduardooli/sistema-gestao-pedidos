@@ -14,24 +14,26 @@ public class GroqAiService : IAiAnalyticsService
     private readonly AppDbContext _db;
     private readonly string _apiKey;
     private readonly string _model;
+    private readonly string _fallbackModel;
 
     public GroqAiService(HttpClient httpClient, AppDbContext db, IConfiguration configuration)
     {
         _httpClient = httpClient;
         _db = db;
         _apiKey = configuration["Groq:ApiKey"] ?? throw new ArgumentNullException("Groq API Key não configurada!");
-        _model = configuration["Groq:Model"] ?? "llama3-8b-8192";
+        _model = configuration["Groq:Model"] ?? "openai/gpt-oss-120b";
+        _fallbackModel = configuration["Groq:FallbackModel"] ?? "llama3-8b-8192";
     }
 
     public async Task<string> AskAboutOrdersAsync(string userQuestion)
     {
         var schemaPrompt = @"Você é um assistente de banco de dados PostgreSQL.
 A tabela de pedidos se chama ""Orders"".
-Colunas: ""Id"" (uuid), ""Cliente"" (varchar), ""Produto"" (varchar), ""Valor"" (numeric), ""Status"" (int), ""DataCriacao"" (timestamp).
+Colunas EXATAS: ""Id"" (uuid), ""Cliente"" (varchar), ""Produto"" (varchar), ""Valor"" (numeric), ""Status"" (int), ""DataCriacao"" (timestamp).
 Regra de Status: 1 = Pendente, 2 = Processando, 3 = Finalizado.
 Responda APENAS com a query SQL para a seguinte pergunta, sem blocos de markdown e sem explicações: " + userQuestion;
 
-        var sqlQuery = await CallGroqAsync(schemaPrompt);
+        var sqlQuery = await CallGroqWithRetryAsync(schemaPrompt);
         sqlQuery = sqlQuery.Replace("`sql", "").Replace("`", "").Trim();
 
         string dbResultStr;
@@ -63,21 +65,38 @@ Responda APENAS com a query SQL para a seguinte pergunta, sem blocos de markdown
 
         var humanizePrompt = $@"O usuário do sistema (Administrador) perguntou: '{userQuestion}'.
 O banco de dados retornou o seguinte dado bruto: '{dbResultStr}'.
-Formule uma resposta amigável e direta em português.
-Regras IMPORTANTES:
-1. Você está falando com o Administrador do sistema.
-2. NUNCA use formatação Markdown na resposta (não use asteriscos ** para negrito, não use crases). Responda apenas com texto puro.";
 
-        return await CallGroqAsync(humanizePrompt);
+Formule uma resposta amigável e direta em português.
+Regras RIGOROSAS:
+1. Você DEVE se basear ÚNICA E EXCLUSIVAMENTE nos dados brutos acima.
+2. NUNCA alucine ou invente informações (ex: Não invente ""Forma de pagamento"" ou ""Quantidade de itens"" pois essas colunas não existem no banco de dados).
+3. Se o dado bruto for vazio ou apresentar erro, avise o Administrador educadamente que a informação não foi encontrada.
+4. NUNCA use formatação Markdown na resposta (não use asteriscos ** para negrito, não use crases). Responda apenas com texto puro.";
+
+        return await CallGroqWithRetryAsync(humanizePrompt);
     }
 
-    private async Task<string> CallGroqAsync(string prompt)
+    private async Task<string> CallGroqWithRetryAsync(string prompt)
+    {
+        try
+        {
+            // Tenta o modelo principal primeiro
+            return await CallGroqApiAsync(prompt, _model);
+        }
+        catch (Exception)
+        {
+            // Fallback (Retry) com o modelo mais barato/rápido em caso de timeout, 503 ou 429
+            return await CallGroqApiAsync(prompt, _fallbackModel);
+        }
+    }
+
+    private async Task<string> CallGroqApiAsync(string prompt, string targetModel)
     {
         var url = "https://api.groq.com/openai/v1/chat/completions";
         
         var requestBody = new
         {
-            model = _model,
+            model = targetModel,
             messages = new[]
             {
                 new { role = "user", content = prompt }
@@ -94,7 +113,7 @@ Regras IMPORTANTES:
         if (!response.IsSuccessStatusCode)
         {
             var errorBody = await response.Content.ReadAsStringAsync();
-            throw new Exception($"Erro do Groq API: {response.StatusCode} | Detalhes: {errorBody}");
+            throw new Exception($"Erro do Groq API no modelo {targetModel}: {response.StatusCode} | Detalhes: {errorBody}");
         }
         
         var responseJson = await response.Content.ReadAsStringAsync();
@@ -109,5 +128,3 @@ Regras IMPORTANTES:
         return text ?? string.Empty;
     }
 }
-
-

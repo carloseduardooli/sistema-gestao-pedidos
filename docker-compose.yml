@@ -61,6 +61,7 @@ services:
       - OTEL_SERVICE_NAME=Orders.Api
       - Groq__ApiKey=${GROQ_API_KEY}
       - Groq__Model=${GROQ_MODEL:-openai/gpt-oss-120b}
+      - Groq__FallbackModel=${GROQ_FALLBACK_MODEL:-llama3-8b-8192}
     healthcheck:
       test: ["CMD", "curl", "-f", "http://localhost:5000/health"]
       interval: 10s
@@ -102,6 +103,7 @@ services:
       - "3000:3000"
     depends_on:
       - api
+
 
 
 
