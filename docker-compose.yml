@@ -58,6 +58,7 @@ services:
       - ConnectionStrings__DefaultConnection=Host=postgres;Port=5432;Database=OrdersDb;Username=${DB_USER};Password=${DB_PASS}
       - RabbitMq__Host=rabbitmq
       - OTEL_EXPORTER_OTLP_ENDPOINT=http://aspire-dashboard:18889
+      - OTEL_SERVICE_NAME=Orders.Api
       - Gemini__ApiKey=${GEMINI_API_KEY}
     depends_on:
       postgres:
@@ -73,6 +74,7 @@ services:
       - ConnectionStrings__DefaultConnection=Host=postgres;Port=5432;Database=OrdersDb;Username=${DB_USER};Password=${DB_PASS}
       - RabbitMq__Host=rabbitmq
       - OTEL_EXPORTER_OTLP_ENDPOINT=http://aspire-dashboard:18889
+      - OTEL_SERVICE_NAME=Orders.Worker
     depends_on:
       postgres:
         condition: service_healthy
@@ -89,5 +91,6 @@ services:
       - "3000:3000"
     depends_on:
       - api
+
 
 
