@@ -1,7 +1,4 @@
-using Microsoft.EntityFrameworkCore;
-using Orders.Infrastructure.Data;
 using Orders.Worker;
-
 using OpenTelemetry.Logs;
 using OpenTelemetry.Metrics;
 using OpenTelemetry.Trace;
@@ -19,21 +16,12 @@ builder.Services.AddOpenTelemetry()
         metrics.AddRuntimeInstrumentation();
     })
     .WithTracing(tracing => {
-    })
-    
+    });
 
-var connectionString = builder.Configuration.GetConnectionString("DefaultConnection") 
-                       ?? "Host=localhost;Database=ordersdb;Username=user;Password=password";
-
-builder.Services.AddDbContext<AppDbContext>(options =>
-    options.UseNpgsql(connectionString));
-
-// Registra a nova classe de negócio
-builder.Services.AddScoped<OrderProcessor>();
+builder.Services.AddOpenTelemetry().UseOtlpExporter();
 
 builder.Services.AddHostedService<Worker>();
+builder.Services.AddScoped<OrderProcessor>();
 
 var host = builder.Build();
 host.Run();
-
-

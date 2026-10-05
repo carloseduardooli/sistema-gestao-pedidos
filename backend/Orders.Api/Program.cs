@@ -4,7 +4,6 @@ using Orders.Core.Entities;
 using Orders.Core.Enums;
 using Orders.Infrastructure.Data;
 using System.Text.Json;
-
 using OpenTelemetry.Logs;
 using OpenTelemetry.Metrics;
 using OpenTelemetry.Trace;
@@ -26,12 +25,13 @@ builder.Services.AddOpenTelemetry()
     .WithTracing(tracing => {
         tracing.AddAspNetCoreInstrumentation()
                .AddHttpClientInstrumentation();
-    })
-    
+    });
+
+builder.Services.AddOpenTelemetry().UseOtlpExporter();
 
 // 1. Configuração do Banco
 var connectionString = builder.Configuration.GetConnectionString("DefaultConnection") 
-                       ?? "Host=localhost;Port=5433;Database=ordersdb;Username=user;Password=password";
+                       ?? "Host=localhost;Port=5433;Database=OrdersDb;Username=postgres;Password=postgres";
 
 builder.Services.AddDbContext<AppDbContext>(options => options.UseNpgsql(connectionString));
 
@@ -114,4 +114,3 @@ public record CreateOrderRequest(string Cliente, string Produto, decimal Valor);
 public record AskRequest(string Question);
 
 public partial class Program { }
-
