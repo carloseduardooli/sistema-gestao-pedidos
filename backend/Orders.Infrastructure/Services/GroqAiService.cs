@@ -73,7 +73,7 @@ Regras IMPORTANTES:
 
     private async Task<string> CallGroqAsync(string prompt)
     {
-        var url = "https://openrouter.ai/api/v1/chat/completions";
+        var url = "https://api.groq.com/openai/v1/chat/completions";
         
         var requestBody = new
         {
@@ -94,7 +94,7 @@ Regras IMPORTANTES:
         if (!response.IsSuccessStatusCode)
         {
             var errorBody = await response.Content.ReadAsStringAsync();
-            throw new Exception($"Erro da IA: {response.StatusCode} | Detalhes: {errorBody}");
+            throw new Exception($"Erro do Groq API: {response.StatusCode} | Detalhes: {errorBody}");
         }
         
         var responseJson = await response.Content.ReadAsStringAsync();
@@ -109,4 +109,5 @@ Regras IMPORTANTES:
         return text ?? string.Empty;
     }
 }
+
 
