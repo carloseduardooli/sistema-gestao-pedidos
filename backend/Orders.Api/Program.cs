@@ -1,3 +1,4 @@
+using Npgsql;
 using Microsoft.EntityFrameworkCore;
 using Orders.Api.Services;
 using Orders.Core.Entities;
@@ -25,8 +26,10 @@ builder.Services.AddOpenTelemetry()
                .AddOtlpExporter();
     })
     .WithTracing(tracing => {
-        tracing.AddAspNetCoreInstrumentation()
+        tracing.AddAspNetCoreInstrumentation(opts => { opts.Filter = ctx => !(ctx.Request.Method == "GET" && ctx.Request.Path == "/orders"); })
                .AddHttpClientInstrumentation()
+               .AddNpgsql()
+               .AddSource("Orders.OutboxPublisher")
                .AddOtlpExporter();
     });
 
@@ -115,3 +118,6 @@ public record CreateOrderRequest(string Cliente, string Produto, decimal Valor);
 public record AskRequest(string Question);
 
 public partial class Program { }
+
+
+

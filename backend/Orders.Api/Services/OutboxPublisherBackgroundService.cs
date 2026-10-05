@@ -5,8 +5,11 @@ using RabbitMQ.Client;
 
 namespace Orders.Api.Services;
 
+using System.Diagnostics;
+
 public class OutboxPublisherBackgroundService : BackgroundService
 {
+    public static readonly ActivitySource ActivitySource = new("Orders.OutboxPublisher");
     private readonly IServiceProvider _serviceProvider;
     private readonly IConfiguration _configuration;
     private readonly ILogger<OutboxPublisherBackgroundService> _logger;
@@ -46,6 +49,7 @@ public class OutboxPublisherBackgroundService : BackgroundService
 
     private async Task ProcessOutboxMessagesAsync(ConnectionFactory factory, CancellationToken stoppingToken)
     {
+        using var activity = ActivitySource.StartActivity("ProcessOutboxMessages");
         using var scope = _serviceProvider.CreateScope();
         var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
 
@@ -80,5 +84,6 @@ public class OutboxPublisherBackgroundService : BackgroundService
         await db.SaveChangesAsync(stoppingToken);
     }
 }
+
 
 

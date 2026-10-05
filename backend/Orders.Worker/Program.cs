@@ -1,3 +1,4 @@
+using Npgsql;
 using Microsoft.EntityFrameworkCore;
 using Orders.Infrastructure.Data;using Orders.Worker;
 using OpenTelemetry.Logs;
@@ -19,7 +20,7 @@ builder.Services.AddOpenTelemetry()
                .AddOtlpExporter();
     })
     .WithTracing(tracing => {
-        tracing.AddOtlpExporter();
+        tracing.AddNpgsql().AddSource("Orders.Worker").AddOtlpExporter();
     });
 
 var connectionString = builder.Configuration.GetConnectionString("DefaultConnection") 
@@ -31,4 +32,6 @@ builder.Services.AddScoped<OrderProcessor>();
 
 var host = builder.Build();
 host.Run();
+
+
 
