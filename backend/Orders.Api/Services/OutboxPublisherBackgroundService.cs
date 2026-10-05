@@ -80,3 +80,4 @@ public class OutboxPublisherBackgroundService : BackgroundService
         await db.SaveChangesAsync(stoppingToken);
     }
 }
+

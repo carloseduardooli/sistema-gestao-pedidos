@@ -89,3 +89,4 @@ public class Worker : BackgroundService
         base.Dispose();
     }
 }
+
