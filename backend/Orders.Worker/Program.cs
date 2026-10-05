@@ -9,16 +9,17 @@ var builder = Host.CreateApplicationBuilder(args);
 builder.Logging.AddOpenTelemetry(logging => {
     logging.IncludeFormattedMessage = true;
     logging.IncludeScopes = true;
+    logging.AddOtlpExporter();
 });
 
 builder.Services.AddOpenTelemetry()
     .WithMetrics(metrics => {
-        metrics.AddRuntimeInstrumentation();
+        metrics.AddRuntimeInstrumentation()
+               .AddOtlpExporter();
     })
     .WithTracing(tracing => {
+        tracing.AddOtlpExporter();
     });
-
-builder.Services.AddOpenTelemetry().UseOtlpExporter();
 
 builder.Services.AddHostedService<Worker>();
 builder.Services.AddScoped<OrderProcessor>();

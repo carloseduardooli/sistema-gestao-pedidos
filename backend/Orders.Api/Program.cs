@@ -14,20 +14,21 @@ var builder = WebApplication.CreateBuilder(args);
 builder.Logging.AddOpenTelemetry(logging => {
     logging.IncludeFormattedMessage = true;
     logging.IncludeScopes = true;
+    logging.AddOtlpExporter();
 });
 
 builder.Services.AddOpenTelemetry()
     .WithMetrics(metrics => {
         metrics.AddAspNetCoreInstrumentation()
                .AddHttpClientInstrumentation()
-               .AddRuntimeInstrumentation();
+               .AddRuntimeInstrumentation()
+               .AddOtlpExporter();
     })
     .WithTracing(tracing => {
         tracing.AddAspNetCoreInstrumentation()
-               .AddHttpClientInstrumentation();
+               .AddHttpClientInstrumentation()
+               .AddOtlpExporter();
     });
-
-builder.Services.AddOpenTelemetry().UseOtlpExporter();
 
 // 1. Configuração do Banco
 var connectionString = builder.Configuration.GetConnectionString("DefaultConnection") 
