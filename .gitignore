@@ -1,0 +1,41 @@
+# =====================
+# .NET Core
+# =====================
+[Bb]in/
+[Oo]bj/
+[Tt]est[Rr]esults/
+*.userprefs
+*.suo
+appsettings.Development.json
+*.log
+
+# =====================
+# Node.js / Next.js
+# =====================
+node_modules/
+.next/
+out/
+build/
+.env
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+.pnp.*
+
+# =====================
+# OS / IDE
+# =====================
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/
+*.user
+
+# =====================
+# Docker
+# =====================
+.docker/

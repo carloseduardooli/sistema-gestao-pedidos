@@ -1,0 +1,6 @@
+﻿{
+  Cliente: Maria Silva,
+  Produto: Monitor 4K,
+  Valor: 3500.50,
+  Status: Pendente
+}

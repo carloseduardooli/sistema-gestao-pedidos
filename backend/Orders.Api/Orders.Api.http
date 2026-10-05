@@ -1,0 +1,24 @@
+@Orders.Api_HostAddress = http://localhost:5000
+
+GET {{Orders.Api_HostAddress}}/orders/
+Accept: application/json
+
+###
+
+POST {{Orders.Api_HostAddress}}/orders/
+Content-Type: application/json
+
+{
+  "cliente": "João da Silva",
+  "produto": "Monitor Ultrawide 34",
+  "valor": 2500.00
+}
+
+###
+
+POST {{Orders.Api_HostAddress}}/orders/ask
+Content-Type: application/json
+
+{
+  "question": "Qual o total financeiro de pedidos no sistema?"
+}

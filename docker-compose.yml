@@ -1,0 +1,89 @@
+version: '3.8'
+
+services:
+  postgres:
+    image: postgres:15
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: OrdersDb
+    ports:
+      - "5433:5432" # Mapeado para 5433 no host para evitar conflito com instâncias locais
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres -d OrdersDb"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  pgadmin:
+    image: dpage/pgadmin4
+    environment:
+      PGADMIN_DEFAULT_EMAIL: admin@admin.com
+      PGADMIN_DEFAULT_PASSWORD: admin
+    ports:
+      - "5050:80"
+    depends_on:
+      - postgres
+
+  rabbitmq:
+    image: rabbitmq:3-management
+    ports:
+      - "5672:5672"
+      - "15672:15672"
+    healthcheck:
+      test: rabbitmq-diagnostics -q ping
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  aspire-dashboard:
+    image: mcr.microsoft.com/dotnet/nightly/aspire-dashboard:8.0.0-preview.6
+    environment:
+      - DOTNET_DASHBOARD_UNSECURED_ALLOW_ANONYMOUS=true
+    ports:
+      - "18888:18888" # UI
+      - "4317:4317" # OTLP gRPC
+
+  # ==========================================
+  # SERVIÇOS DA APLICAÇÃO (Orquestração Total)
+  # ==========================================
+
+  api:
+    build:
+      context: ./backend
+      dockerfile: Orders.Api/Dockerfile
+    ports:
+      - "5000:5000"
+    environment:
+      # O override das variáveis aponta para os nomes internos dos containers no Docker Network
+      - ConnectionStrings__DefaultConnection=Host=postgres;Port=5432;Database=OrdersDb;Username=postgres;Password=postgres
+      - RabbitMq__Host=rabbitmq
+    depends_on:
+      postgres:
+        condition: service_healthy
+      rabbitmq:
+        condition: service_healthy
+
+  worker:
+    build:
+      context: ./backend
+      dockerfile: Orders.Worker/Dockerfile
+    environment:
+      - ConnectionStrings__DefaultConnection=Host=postgres;Port=5432;Database=OrdersDb;Username=postgres;Password=postgres
+      - RabbitMq__Host=rabbitmq
+    depends_on:
+      postgres:
+        condition: service_healthy
+      rabbitmq:
+        condition: service_healthy
+      api:
+        condition: service_started
+
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    ports:
+      - "3000:3000"
+    depends_on:
+      - api
