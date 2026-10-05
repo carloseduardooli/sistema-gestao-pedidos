@@ -59,11 +59,6 @@ services:
       - RabbitMq__Host=rabbitmq
       - OTEL_EXPORTER_OTLP_ENDPOINT=http://aspire-dashboard:18889
       - OTEL_SERVICE_NAME=Orders.Api
-      - Gemini__ApiKey=${GEMINI_API_KEY}
-      - Gemini__Model=gemini-3.8-flash
-      - AiProvider=${AI_PROVIDER:-Gemini}
-      - OpenAi__ApiKey=${OPENAI_API_KEY}
-      - OpenAi__Model=${OPENAI_MODEL:-gpt-4o-mini}
       - Groq__ApiKey=${GROQ_API_KEY}
       - Groq__Model=${GROQ_MODEL:-llama3-8b-8192}
     healthcheck:
@@ -107,6 +102,7 @@ services:
       - "3000:3000"
     depends_on:
       - api
+
 
 
 
