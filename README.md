@@ -43,43 +43,31 @@ dotnet test
 Para facilitar a visualização de como os componentes se comunicam, desenhei este diagrama da nossa topologia:
 
 ```mermaid
-flowchart TD
-  subgraph Frontend ["Frontend (Next.js)"]
-    UI["Dashboard UI (TanStack Query)"]
-    Chat["Módulo IA (Chat)"]
-  end
-
-  subgraph Backend ["Backend (.NET 8)"]
-    API["Orders.Api (Minimal APIs)"]
-    Publisher["Outbox Publisher (Background Service)"]
-    Worker["Orders.Worker (Consumer)"]
-  end
-
-  subgraph Infra ["Infraestrutura (Docker)"]
-    DB[(PostgreSQL)]
-    MQ[[RabbitMQ]]
-  end
+flowchart LR
+  %% Componentes
+  UI["🖥️ Dashboard UI (Next.js)"]
+  Chat["🤖 Chat IA (Next.js)"]
   
-  subgraph External ["Serviços Externos"]
-    LLM["Google Gemini (LLM)"]
-  end
+  API["⚙️ Orders.API (.NET)"]
+  Worker["⚙️ Orders.Worker (.NET)"]
+  
+  DB[(🗄️ PostgreSQL)]
+  MQ[[🐇 RabbitMQ]]
+  Gemini["🧠 Google Gemini"]
 
-  %% Fluxo do Pedido (Outbox Pattern)
-  UI -- "1. POST /orders" --> API
-  API -- "2. Transação ACID (Pedido + Outbox)" --> DB
-  Publisher -. "3. Lê tabela Outbox" .-> DB
-  Publisher -- "4. Publica Evento" --> MQ
-  MQ -- "5. Consome fila" --> Worker
-  Worker -- "6. Atualiza Status" --> DB
+  %% Fluxo 1: Criação e Processamento (Sólido)
+  UI == "1. POST /orders" ==> API
+  API -- "2. Salva Pedido+Outbox" --> DB
+  API -- "3. Lê e Publica" --> MQ
+  MQ -- "4. Fila (Consumo)" --> Worker
+  Worker -- "5. Atualiza Status" --> DB
 
-  %% Fluxo de Inteligência Artificial
-  Chat -- "A. Pergunta Natural" --> API
-  API -- "B. Traduz p/ SQL" --> LLM
-  API -- "C. Roda Query dinâmica" --> DB
-  DB -- "D. Retorna Dados" --> API
-  API -- "E. Humaniza resposta" --> LLM
-  LLM -- "F. Devolve texto formatado" --> API
-  API -- "G. Exibe resposta" --> Chat
+  %% Fluxo 2: IA Text-to-SQL (Pontilhado)
+  Chat -. "A. Pergunta Natural" .-> API
+  API -. "B. Gera SQL" .-> Gemini
+  API -. "C. Roda Query" .-> DB
+  API -. "D. Humaniza Resposta" .-> Gemini
+  API -. "E. Exibe Texto" .-> Chat
 ```
 
 ---
