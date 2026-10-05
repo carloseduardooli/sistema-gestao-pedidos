@@ -25,7 +25,9 @@ public class Worker : BackgroundService
     {
         var factory = new ConnectionFactory 
         { 
-            HostName = "localhost", UserName = "user", Password = "password",
+            HostName = _serviceProvider.GetRequiredService<IConfiguration>()["RabbitMq:Host"] ?? "localhost",
+            UserName = _serviceProvider.GetRequiredService<IConfiguration>()["RabbitMq:UserName"] ?? "guest",
+            Password = _serviceProvider.GetRequiredService<IConfiguration>()["RabbitMq:Password"] ?? "guest",
             DispatchConsumersAsync = true
         };
 
@@ -89,4 +91,5 @@ public class Worker : BackgroundService
         base.Dispose();
     }
 }
+
 
