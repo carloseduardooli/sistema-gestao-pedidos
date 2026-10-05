@@ -27,11 +27,13 @@ public class GroqAiService : IAiAnalyticsService
 
     public async Task<string> AskAboutOrdersAsync(string userQuestion)
     {
-        var schemaPrompt = @"Você é um assistente de banco de dados PostgreSQL.
-A tabela de pedidos se chama ""Orders"".
-Colunas EXATAS: ""Id"" (uuid), ""Cliente"" (varchar), ""Produto"" (varchar), ""Valor"" (numeric), ""Status"" (int), ""DataCriacao"" (timestamp).
-Regra de Status: 1 = Pendente, 2 = Processando, 3 = Finalizado.
-Responda APENAS com a query SQL para a seguinte pergunta, sem blocos de markdown e sem explicações: " + userQuestion;
+                var schemaPrompt = @"Você é um assistente de banco de dados PostgreSQL.
+O nome EXATO da tabela é ""Orders"".
+As colunas EXATAS são: ""Id"" (uuid), ""Cliente"" (varchar), ""Produto"" (varchar), ""Valor"" (numeric), ""Status"" (int), ""DataCriacao"" (timestamp).
+
+Regras OBRIGATÓRIAS para o PostgreSQL:
+1. Você DEVE usar ASPAS DUPLAS ao redor do nome da tabela e de todas as colunas. Exemplo: SELECT ""Id"", ""Cliente"" FROM ""Orders"" WHERE ""Produto"" = 'TV'.
+2. Responda APENAS com a query SQL para a seguinte pergunta, sem blocos de markdown, sem `sql e sem explicações: " + userQuestion;
 
         var sqlQuery = await CallGroqWithRetryAsync(schemaPrompt);
         sqlQuery = sqlQuery.Replace("`sql", "").Replace("`", "").Trim();
@@ -63,15 +65,16 @@ Responda APENAS com a query SQL para a seguinte pergunta, sem blocos de markdown
             await _db.Database.CloseConnectionAsync();
         }
 
-        var humanizePrompt = $@"O usuário do sistema (Administrador) perguntou: '{userQuestion}'.
+                var humanizePrompt = $@"O usuário do sistema (Administrador) perguntou: '{userQuestion}'.
 O banco de dados retornou o seguinte dado bruto: '{dbResultStr}'.
 
 Formule uma resposta amigável e direta em português.
 Regras RIGOROSAS:
 1. Você DEVE se basear ÚNICA E EXCLUSIVAMENTE nos dados brutos acima.
-2. NUNCA alucine ou invente informações (ex: Não invente ""Forma de pagamento"" ou ""Quantidade de itens"" pois essas colunas não existem no banco de dados).
-3. Se o dado bruto for vazio ou apresentar erro, avise o Administrador educadamente que a informação não foi encontrada.
-4. NUNCA use formatação Markdown na resposta (não use asteriscos ** para negrito, não use crases). Responda apenas com texto puro.";
+2. TRADUÇÃO DE STATUS: Na coluna Status (que é um número), lembre-se sempre que: 1 significa Pendente, 2 significa Processando e 3 significa Finalizado. NUNCA confunda o número do status com 'Quantidade de itens'.
+3. NUNCA alucine ou invente informações (ex: Não invente "Forma de pagamento" ou "Quantidade de itens" pois essas colunas não existem).
+4. Se o dado bruto for vazio ou contiver erros, avise educadamente que a informação não foi encontrada.
+5. NUNCA use formatação Markdown na resposta (não use asteriscos ** para negrito, não use crases). Responda apenas com texto puro.";
 
         return await CallGroqWithRetryAsync(humanizePrompt);
     }
@@ -128,3 +131,4 @@ Regras RIGOROSAS:
         return text ?? string.Empty;
     }
 }
+
