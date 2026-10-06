@@ -11,7 +11,7 @@ using OpenTelemetry.Trace;
 
 var builder = WebApplication.CreateBuilder(args);
 
-// Configuração do OpenTelemetry para o Aspire Dashboard
+// Configuracao do OpenTelemetry para o Aspire Dashboard
 builder.Logging.AddOpenTelemetry(logging => {
     logging.IncludeFormattedMessage = true;
     logging.IncludeScopes = true;
@@ -33,7 +33,7 @@ builder.Services.AddOpenTelemetry()
                .AddOtlpExporter();
     });
 
-// 1. Configuração do Banco
+// 1. Configuracao do Banco
 var connectionString = builder.Configuration.GetConnectionString("DefaultConnection") 
                        ?? "Host=localhost;Port=5433;Database=OrdersDb;Username=postgres;Password=postgres";
 
@@ -45,7 +45,7 @@ builder.Services.AddHostedService<OutboxPublisherBackgroundService>();
 builder.Services.AddCors();
 builder.Services.AddHttpClient<Orders.Core.Interfaces.IAiAnalyticsService, Orders.Infrastructure.Services.GroqAiService>();
 
-// Tratamento padronizado de exceções (RFC 7807)
+// Tratamento padronizado de excecoes (RFC 7807)
 builder.Services.AddProblemDetails();
 builder.Services.AddHealthChecks();
 
@@ -55,7 +55,7 @@ app.UseExceptionHandler(); // Captura exceptions globais e retorna JSON seguro
 app.UseStatusCodePages();
 app.MapHealthChecks("/health");
 
-// Migrations automáticas do banco de dados (Requisito)
+// Migrations automaticas do banco de dados (Requisito)
 using (var scope = app.Services.CreateScope())
 {
     var dbContext = scope.ServiceProvider.GetRequiredService<AppDbContext>();
@@ -67,12 +67,12 @@ app.UseCors(x => x.AllowAnyHeader().AllowAnyMethod().AllowAnyOrigin());
 // ===================== ENDPOINTS =====================
 app.MapPost("/orders", async (CreateOrderRequest req, AppDbContext db) =>
 {
-    // Validação de Dados (Fail-fast)
+    // Validacao de Dados (Fail-fast)
     if (string.IsNullOrWhiteSpace(req.Cliente))
-        return Results.BadRequest(new { error = "O nome do cliente é obrigatório." });
+        return Results.BadRequest(new { error = "O nome do cliente eh obrigatorio." });
         
     if (string.IsNullOrWhiteSpace(req.Produto))
-        return Results.BadRequest(new { error = "O produto é obrigatório." });
+        return Results.BadRequest(new { error = "O produto eh obrigatorio." });
         
     if (req.Valor <= 0)
         return Results.BadRequest(new { error = "O valor do pedido deve ser maior que zero." });
@@ -87,7 +87,7 @@ app.MapPost("/orders", async (CreateOrderRequest req, AppDbContext db) =>
 
     db.Orders.Add(order);
     db.OutboxMessages.Add(outboxMessage);
-    await db.SaveChangesAsync(); // Transação natural: Salva os dois juntos!
+    await db.SaveChangesAsync(); // Transacao natural: Salva os dois juntos!
 
     return Results.Created($"/orders/{order.Id}", order);
 });
@@ -104,11 +104,11 @@ app.MapGet("/orders/{id}", async (Guid id, AppDbContext db) =>
     return order is not null ? Results.Ok(order) : Results.NotFound();
 });
 
-// Endpoint do Módulo de IA / Analytics (+5 Pontos)
+// Endpoint de IA / Analytics
 app.MapPost("/orders/ask", async (AskRequest req, Orders.Core.Interfaces.IAiAnalyticsService ai) =>
 {
     if (string.IsNullOrWhiteSpace(req.Question))
-        return Results.BadRequest(new { error = "A pergunta não pode estar vazia." });
+        return Results.BadRequest(new { error = "A pergunta nao pode estar vazia." });
 
     var resposta = await ai.AskAboutOrdersAsync(req.Question);
     return Results.Ok(new { resposta });
@@ -120,12 +120,3 @@ public record CreateOrderRequest(string Cliente, string Produto, decimal Valor);
 public record AskRequest(string Question);
 
 public partial class Program { }
-
-
-
-
-
-
-
-
-
