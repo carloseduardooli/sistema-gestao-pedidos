@@ -1,13 +1,14 @@
 using Npgsql;
 using Microsoft.EntityFrameworkCore;
-using Orders.Infrastructure.Data;using Orders.Worker;
+using Orders.Infrastructure.Data;
+using Orders.Worker;
 using OpenTelemetry.Logs;
 using OpenTelemetry.Metrics;
 using OpenTelemetry.Trace;
 
 var builder = Host.CreateApplicationBuilder(args);
 
-// Configuração do OpenTelemetry para o Aspire Dashboard
+// Configuracao do OpenTelemetry para o Aspire Dashboard
 builder.Logging.AddOpenTelemetry(logging => {
     logging.IncludeFormattedMessage = true;
     logging.IncludeScopes = true;
@@ -32,8 +33,3 @@ builder.Services.AddScoped<OrderProcessor>();
 
 var host = builder.Build();
 host.Run();
-
-
-
-
-

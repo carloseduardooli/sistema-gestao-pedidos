@@ -1,4 +1,4 @@
-﻿using System.Text;
+using System.Text;
 using Microsoft.EntityFrameworkCore;
 using Orders.Infrastructure.Data;
 using RabbitMQ.Client;
@@ -35,7 +35,7 @@ public class OutboxPublisherBackgroundService : BackgroundService
 
         while (!stoppingToken.IsCancellationRequested)
         {
-                        try
+            try
             {
                 await ProcessOutboxMessagesAsync(factory, stoppingToken);
             }
@@ -46,7 +46,7 @@ public class OutboxPublisherBackgroundService : BackgroundService
             }
             catch (Exception ex)
             {
-                // Se a aplicação estiver morrendo, não logamos o erro para não poluir os logs do CI/CD
+                // Se a aplicacao estiver morrendo, nao logamos o erro para nao poluir os logs do CI/CD
                 if (!stoppingToken.IsCancellationRequested && !ex.Message.Contains("Could not find resource"))
                 {
                     _logger.LogError(ex, "Erro ao processar a tabela de Outbox.");
@@ -93,7 +93,3 @@ public class OutboxPublisherBackgroundService : BackgroundService
         await db.SaveChangesAsync(stoppingToken);
     }
 }
-
-
-
-
